@@ -1,0 +1,1 @@
+pyuic5 -o ui_reader_tool.py reader_tool.ui
