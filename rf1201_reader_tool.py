@@ -16,9 +16,11 @@ import threading
 import func
 from res import images_qr
 
+from crypt import *
+
 
 def getProgVer():
-    return 'V1.001'
+    return 'V1.002'
 
 
 def getNowStr(isCompact=True, isMill=False):
@@ -65,6 +67,67 @@ def getTxt(txtName):
 #             return
 #         time.sleep(0.01)
 
+def calcCardKeyBs(reader):
+    deskey = 'd463fee0c70007d598d4777badde94b0'
+    loop = 0
+    sec1keya = ''
+    while True:
+        r = reader.FoundCard()
+        if not r or not func.IsSwOk(r[1]):
+            return False
+        csn = r[2][6:]
+        baCsn = bytes.fromhex(csn)
+        if loop == 0:
+            sec1keya = 'FF' * 6
+        elif loop == 1:
+            sec1keya = '00' * 6
+        else:
+            sec1keya = csn + csn[0:4]
+        reader.LoadKey(1, 1, sec1keya)
+        r = reader.AuthKey(1, 1)
+        if not func.IsSwOk(r[1]):
+            loop += 1
+            if loop > 2:
+                return False
+            continue
+        r = reader.ReadBlock(4)
+        if not func.IsSwOk(r[1]):
+            return False
+        block4 = bytes.fromhex(r[2])
+        break
+    KeyBs = list(range(16))
+    if loop == 0:
+        for i in range(16):
+            KeyBs[i] = 'FF' * 6
+    else:
+        cardtype = block4[13]
+        factor = bytearray(8)
+        for i in range(4):
+            factor[i] = baCsn[i]
+        for i in range(3):
+            factor[4+i] = block4[6+i]
+        if 0x90==cardtype or 0x91==cardtype or 0x92==cardtype:
+            for i in range(0,3):
+                factor[7] = i
+                KeyBs[i] = des_ecb(bytes(factor), deskey)
+            for i in range(3,16):
+                KeyBs[i] = KeyBs[2]
+        else:
+            for i in range(16):
+                if i == 2:
+                    factor[7] = 0x10
+                elif i >= 3 and i <= 5:
+                    factor[7] = 0x03
+                elif i >= 7 and i <= 15:
+                    factor[7] = i + 10
+                else:
+                    factor[7] = i
+                KeyBs[i] = des_ecb(bytes(factor), deskey)
+    return tuple(map(lambda x: x[0:6], KeyBs))
+
+
+
+
 
 class MainWindow(QtWidgets.QWidget):
 
@@ -109,7 +172,11 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.le_KeyA.setText('A0A1A2A3A4A5')
         self.ui.le_KeyB.setText('FFFFFFFFFFFF')
 
+        self.ui.le_RfResetMs.setText('1')
+
         self.ui.le_WriteBlock.setMaxLength(32)
+        self.ui.le_KeyA.setMaxLength(12)
+        self.ui.le_KeyB.setMaxLength(12)
 
         self.timerTip = QTimer(self)
         self.timerTip.timeout.connect(self.timerTipProc)
@@ -147,6 +214,8 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.pb_ReadLkt4210Info.clicked.connect(self.on_pb_ReadLkt4210Info)
         self.ui.pb_RfReset.clicked.connect(self.on_pb_RfReset)
         self.ui.pb_CpuPps.clicked.connect(self.on_pb_CpuPps)
+        self.ui.pb_CalcKeyBs.clicked.connect(self.on_pb_CalcKeyBs)
+        self.ui.pb_ReadAllBlocks.clicked.connect(self.on_pb_ReadAllBlocks)
 
         # QtWidgets.QWidget.setTabOrder(self.ui.cob_Com, self.ui.pb_OpenOrClose)
         # QtWidgets.QWidget.setTabOrder(
@@ -165,7 +234,7 @@ class MainWindow(QtWidgets.QWidget):
             color = 'red'
         else:
             color = 'green'
-        self.ui.te_Recv.append('[<font color="' + color + '">' + getNowStr(False, True) + '</font>]' + str(s))
+        self.ui.te_Recv.append('[<font color="' + color + '">' + getNowStr(False, True) + '</font>] ' + str(s))
 
     def on_pb_OpenOrClose_Clicked(self):
         if not self.reader.IsOpen():
@@ -253,21 +322,21 @@ class MainWindow(QtWidgets.QWidget):
     def on_pb_Request(self):
         self.Log('Request')
         r = self.reader.Request()
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_Atqa.setText(r[2])
         self.Log(r, 1)
 
     def on_pb_RequestAll(self):
         self.Log('RequestAll')
         r = self.reader.Request(1)
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_Atqa.setText(r[2])
         self.Log(r, 1)
 
     def on_pb_Anticol(self):
         self.Log('Anticol')
         r = self.reader.Anticoll()
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_Csn.setText(r[2])
         self.Log(r, 1)
 
@@ -275,14 +344,14 @@ class MainWindow(QtWidgets.QWidget):
         csn = self.ui.le_Csn.text()
         self.Log('SelectCard ' + csn)
         r = self.reader.SelectCard(csn)
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_Sak.setText(r[2])
         self.Log(r, 1)
 
     def on_pb_FoundCard(self):
         self.Log('SelectCard')
         r = self.reader.FoundCard()
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_Atqa.setText(r[2][0:4])
             self.ui.le_Sak.setText(r[2][4:6])
             self.ui.le_Csn.setText(r[2][6:])
@@ -294,114 +363,118 @@ class MainWindow(QtWidgets.QWidget):
         self.Log(r, 1)
 
     def on_pb_ReadBlock(self):
-        blockno = self.ui.cob_BlockNo.currentText()
-        self.Log('ReadBlock ' + blockno)
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        blockno = int(blocknostr, 10)
+        self.Log('ReadBlock ' + blocknostr)
         r = self.reader.ReadBlock(blockno)
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_ReadBlock.setText(r[2])
         self.Log(r, 1)
 
     def on_pb_WriteBlock(self):
-        blockno = self.ui.cob_BlockNo.currentText()
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        blockno = int(blocknostr, 10)
         data = self.ui.le_WriteBlock.text()
         if len(data) != 32 or not func.ishexstr(data):
             # QMessageBox.information(self, 'Caution', 'Write block data fmt err!' + ' [' + data + ']', QMessageBox.Ok)
             self.showTip('Write block data fmt err!' + ' [' + data + ']')
             return
-        if int(blockno, 10) in range(3, 64, 4):
+        if blockno in range(3, 64, 4):
             reply = QMessageBox.information(self, 'Caution', 'Sure to write key block?', QMessageBox.Yes | QMessageBox.No)
             if QMessageBox.No == reply:
                 return
-        self.Log('WriteBlock ' + blockno + ' ' + data)
+        self.Log('WriteBlock ' + blocknostr + ' ' + data)
         r = self.reader.WriteBlock(blockno, data)
-        if r[0] and func.IsSwOk(r[1]):
-            self.ui.le_WriteBlock.setText(r[2])
         self.Log(r, 1)
 
     def on_pb_LoadKeyA(self):
-        blockno = self.ui.cob_BlockNo.currentText()
-        secno = int(blockno, 10) // 4
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        secno = int(blocknostr, 10) // 4
         key = self.ui.le_KeyA.text()
         self.Log('LoadKeyA %d ' % secno + key)
-        r = self.reader.LoadKey(1, blockno, key)
+        r = self.reader.LoadKey(1, secno, key)
         self.Log(r, 1)
 
     def on_pb_LoadKeyB(self):
-        blockno = self.ui.cob_BlockNo.currentText()
-        secno = int(blockno, 10) // 4
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        secno = int(blocknostr, 10) // 4
         key = self.ui.le_KeyB.text()
         self.Log('LoadKeyB %d ' % secno + key)
-        r = self.reader.LoadKey(4, blockno, key)
+        r = self.reader.LoadKey(4, secno, key)
         self.Log(r, 1)
 
     def on_pb_AuthKeyA(self):
-        blockno = self.ui.cob_BlockNo.currentText()
-        secno = int(blockno, 10) // 4
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        secno = int(blocknostr, 10) // 4
         self.Log('AuthKeyA %d' % secno)
-        r = self.reader.AuthKey(1, blockno)
+        r = self.reader.AuthKey(1, secno)
         self.Log(r, 1)
 
     def on_pb_AuthKeyB(self):
-        blockno = self.ui.cob_BlockNo.currentText()
-        secno = int(blockno, 10) // 4
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        secno = int(blocknostr, 10) // 4
         self.Log('AuthKeyB %d' % secno)
-        r = self.reader.AuthKey(4, blockno)
+        r = self.reader.AuthKey(4, secno)
         self.Log(r, 1)
 
     def on_pb_ReadValue(self):
-        blockno = self.ui.cob_BlockNo.currentText()
-        self.Log('ReadVal ' + blockno)
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        blockno = int(blocknostr, 10)
+        self.Log('ReadVal ' + blocknostr)
         r = self.reader.ReadVal(blockno)
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             v = int(r[2], 16)
             self.ui.le_ReadValue.setText('%d (0x%s)' % (v, r[2]))
         self.Log(r, 1)
 
     def on_pb_WriteValue(self):
-        blockno = self.ui.cob_BlockNo.currentText()
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        blockno = int(blocknostr, 10)
         val = self.ui.le_WriteValue.text()
         try:
             val = int(val, 10)
         except Exception as e:
             self.showTip(e)
             return
-        if int(blockno, 10) in range(3, 64, 4):
+        if blockno in range(3, 64, 4):
             # QMessageBox.information(self, 'Caution', 'Cannot write key block!', QMessageBox.Ok)
             self.showTip('Cannot write key block!')
             return
-        self.Log('WriteVal %s %d' % (blockno, val))
+        self.Log('WriteVal %s %d' % (blocknostr, val))
         r = self.reader.WriteVal(blockno, val)
         self.Log(r, 1)
 
     def on_pb_IncValue(self):
-        blockno = self.ui.cob_BlockNo.currentText()
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        blockno = int(blocknostr, 10)
         val = self.ui.le_IncValue.text()
         try:
             val = int(val, 10)
         except Exception as e:
             self.showTip(e)
             return
-        if int(blockno, 10) in range(3, 64, 4):
+        if blockno in range(3, 64, 4):
             # QMessageBox.information(self, 'Caution', 'Cannot inc key block!', QMessageBox.Ok)
             self.showTip('Cannot inc key block!')
             return
-        self.Log('IncVal %s %d' % (blockno, val))
+        self.Log('IncVal %s %d' % (blocknostr, val))
         r = self.reader.IncVal(blockno, val)
         self.Log(r, 1)
 
     def on_pb_DecValue(self):
-        blockno = self.ui.cob_BlockNo.currentText()
+        blocknostr = self.ui.cob_BlockNo.currentText()
+        blockno = int(blocknostr, 10)
         val = self.ui.le_DecValue.text()
         try:
             val = int(val, 10)
         except Exception as e:
             self.showTip(e)
             return
-        if int(blockno, 10) in range(3, 64, 4):
+        if blockno in range(3, 64, 4):
             # QMessageBox.information(self, 'Caution', 'Cannot dec key block!', QMessageBox.Ok)
             self.showTip('Cannot dec key block!')
             return
-        self.Log('DecVal %s %d' % (blockno, val))
+        self.Log('DecVal %s %d' % (blocknostr, val))
         r = self.reader.DecVal(blockno, val)
         self.Log(r, 1)
 
@@ -465,7 +538,7 @@ class MainWindow(QtWidgets.QWidget):
     def on_pb_CpuReset(self):
         self.Log('CpuReset')
         r = self.reader.CpuReset()
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_CpuReset.setText(r[2])
         self.Log(r, 1)
 
@@ -481,7 +554,7 @@ class MainWindow(QtWidgets.QWidget):
             return
         self.Log('CpuCmd ' + coscmd)
         r = self.reader.CpuCmd(coscmd)
-        if r[0]:
+        if r:
             self.ui.le_CosRetCode.setText(r[1])
             if r[2]:
                 self.ui.le_CosRetData.setText(r[2])
@@ -490,14 +563,14 @@ class MainWindow(QtWidgets.QWidget):
     def on_pb_ReadSid(self):
         self.Log('DevReadSID')
         r = self.reader.DevReadSID()
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_ReadSid.setText(r[2])
         self.Log(r, 1)
 
     def on_pb_ReadLkt4210Info(self):
         self.Log('DevReadLKT4210Info')
         r = self.reader.DevReadLKT4210Info()
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_ReadLkt4210Info.setText(r[2])
         self.Log(r, 1)
 
@@ -516,9 +589,45 @@ class MainWindow(QtWidgets.QWidget):
         sendpps = self.ui.le_CpuPpsSend.text()
         self.Log('CpuPPS ' + sendpps)
         r = self.reader.CpuPPS(sendpps)
-        if r[0] and func.IsSwOk(r[1]):
+        if r and func.IsSwOk(r[1]):
             self.ui.le_CpuPpsRecv.setText(r[2])
         self.Log(r, 1)
+
+    def on_pb_CalcKeyBs(self):
+        self.Log('Calc KeyBs:')
+        k = calcCardKeyBs(self.reader)
+        if k:
+            for i in range(16):
+                self.Log('%02d ----- %s' % (i, k[i].hex()), 1)
+        else:
+            self.Log(k, 1)
+
+    def on_pb_ReadAllBlocks(self):
+        self.Log('Read All Blocks:')
+        k = calcCardKeyBs(self.reader)
+        if not k:
+            self.Log('Calc KeyBs err!', 1)
+            return
+        r = self.reader.FoundCard()
+        if not r or not func.IsSwOk(r[1]):
+            self.Log('FoundCard err!', 1)
+            return
+        for i in range(64):
+            sec = i//4
+            r = self.reader.LoadKey(4, sec, k[sec])
+            if not r or not func.IsSwOk(r[1]):
+                self.Log('LoadKey %d %d %s err!' % (4, sec, k[sec]), 1)
+                return
+            r = self.reader.AuthKey(4, sec)
+            if not r or not func.IsSwOk(r[1]):
+                self.Log('AuthKey %d %d err!' % (4, sec), 1)
+                return
+            r = self.reader.ReadBlock(i)
+            if not r or not func.IsSwOk(r[1]):
+                self.Log('ReadBlock %d err!' % i, 1)
+                return
+            self.Log('%02d --- %s' % (i, r[2]), 1)
+
 
     # def eventFilter(self, obj, ev):
     #     print('eventFilter')

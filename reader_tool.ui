@@ -91,6 +91,19 @@
    </item>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="4" column="2">
+      <widget class="QPushButton" name="pb_RequestAll">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Request All</string>
+       </property>
+      </widget>
+     </item>
      <item row="4" column="5">
       <widget class="QLineEdit" name="le_Csn">
        <property name="sizePolicy">
@@ -137,8 +150,18 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
-      <widget class="QPushButton" name="pb_RequestAll">
+     <item row="11" column="9">
+      <widget class="QLineEdit" name="le_CpuPpsRecv">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="9">
+      <widget class="QPushButton" name="pb_HaltCard">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -146,7 +169,290 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Request All</string>
+        <string>Halt Card</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="8">
+      <widget class="QPushButton" name="pb_FoundCard">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Found Card</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="5">
+      <widget class="QPushButton" name="pb_Beep">
+       <property name="text">
+        <string>Beep</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="6">
+      <widget class="QPushButton" name="pb_WriteBlock">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Write Block</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QPushButton" name="pb_ReadBlock">
+       <property name="text">
+        <string>Read Block</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="4" colspan="2">
+      <widget class="QLineEdit" name="le_ReadBlock"/>
+     </item>
+     <item row="5" column="7" colspan="2">
+      <widget class="QLineEdit" name="le_WriteBlock"/>
+     </item>
+     <item row="10" column="3" colspan="9">
+      <widget class="QLineEdit" name="le_CosRetData"/>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>COS Return:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="11">
+      <widget class="QPushButton" name="pb_CpuDeselect">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>CPU Deselect</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="4">
+      <widget class="QPushButton" name="pb_LoadKeyB">
+       <property name="text">
+        <string>Load KeyB</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="5">
+      <widget class="QPushButton" name="pb_AuthKeyA">
+       <property name="text">
+        <string>Auth KeyA</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Key A:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="5">
+      <widget class="QPushButton" name="pb_AuthKeyB">
+       <property name="text">
+        <string>Auth KeyB</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Key B:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2" colspan="2">
+      <widget class="QLineEdit" name="le_KeyA"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>Block No:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <widget class="QComboBox" name="cob_BlockNo">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="4">
+      <widget class="QPushButton" name="pb_LoadKeyA">
+       <property name="text">
+        <string>Load KeyA</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2" colspan="2">
+      <widget class="QLineEdit" name="le_KeyB"/>
+     </item>
+     <item row="8" column="6">
+      <widget class="QComboBox" name="cob_SamBaudrate">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="4">
+      <widget class="QComboBox" name="cob_SamSlot">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="5">
+      <widget class="QPushButton" name="pb_SelectSamBaudrate">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Select Sam Baudrate</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
+      <widget class="QPushButton" name="pb_ReadSid">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Read SID</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="2">
+      <widget class="QLineEdit" name="le_ReadSid">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="3">
+      <widget class="QPushButton" name="pb_ReadLkt4210Info">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Read LKT4210 Info</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="4">
+      <widget class="QLineEdit" name="le_ReadLkt4210Info">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="5">
+      <widget class="QPushButton" name="pb_RfReset">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>RF Reset</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="6">
+      <widget class="QLineEdit" name="le_RfResetMs">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="7">
+      <widget class="QPushButton" name="pb_CpuPps">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>CPU PPS</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="8">
+      <widget class="QLineEdit" name="le_CpuPpsSend">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
       </widget>
      </item>
@@ -526,309 +832,17 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="9">
-      <widget class="QPushButton" name="pb_HaltCard">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+     <item row="12" column="1">
+      <widget class="QPushButton" name="pb_CalcKeyBs">
        <property name="text">
-        <string>Halt Card</string>
+        <string>CalcKeyBs</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="8">
-      <widget class="QPushButton" name="pb_FoundCard">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+     <item row="12" column="2">
+      <widget class="QPushButton" name="pb_ReadAllBlocks">
        <property name="text">
-        <string>Found Card</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="5">
-      <widget class="QPushButton" name="pb_Beep">
-       <property name="text">
-        <string>Beep</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="6">
-      <widget class="QPushButton" name="pb_WriteBlock">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Write Block</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="3">
-      <widget class="QPushButton" name="pb_ReadBlock">
-       <property name="text">
-        <string>Read Block</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="4" colspan="2">
-      <widget class="QLineEdit" name="le_ReadBlock"/>
-     </item>
-     <item row="5" column="7" colspan="2">
-      <widget class="QLineEdit" name="le_WriteBlock"/>
-     </item>
-     <item row="10" column="3" colspan="9">
-      <widget class="QLineEdit" name="le_CosRetData"/>
-     </item>
-     <item row="10" column="1">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>COS Return:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="11">
-      <widget class="QPushButton" name="pb_CpuDeselect">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>CPU Deselect</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="4">
-      <widget class="QPushButton" name="pb_LoadKeyB">
-       <property name="text">
-        <string>Load KeyB</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="5">
-      <widget class="QPushButton" name="pb_AuthKeyA">
-       <property name="text">
-        <string>Auth KeyA</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Key A:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="5">
-      <widget class="QPushButton" name="pb_AuthKeyB">
-       <property name="text">
-        <string>Auth KeyB</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Key B:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="2" colspan="2">
-      <widget class="QLineEdit" name="le_KeyA"/>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLabel" name="label_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="text">
-        <string>Block No:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="2">
-      <widget class="QComboBox" name="cob_BlockNo">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="4">
-      <widget class="QPushButton" name="pb_LoadKeyA">
-       <property name="text">
-        <string>Load KeyA</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2" colspan="2">
-      <widget class="QLineEdit" name="le_KeyB"/>
-     </item>
-     <item row="8" column="6">
-      <widget class="QComboBox" name="cob_SamBaudrate">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="4">
-      <widget class="QComboBox" name="cob_SamSlot">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="5">
-      <widget class="QPushButton" name="pb_SelectSamBaudrate">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Select Sam Baudrate</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="1">
-      <widget class="QPushButton" name="pb_ReadSid">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Read SID</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="2">
-      <widget class="QLineEdit" name="le_ReadSid">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="3">
-      <widget class="QPushButton" name="pb_ReadLkt4210Info">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Read LKT4210 Info</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="4">
-      <widget class="QLineEdit" name="le_ReadLkt4210Info">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="5">
-      <widget class="QPushButton" name="pb_RfReset">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>RF Reset</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="6">
-      <widget class="QLineEdit" name="le_RfResetMs">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="7">
-      <widget class="QPushButton" name="pb_CpuPps">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>CPU PPS</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="8">
-      <widget class="QLineEdit" name="le_CpuPpsSend">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="9">
-      <widget class="QLineEdit" name="le_CpuPpsRecv">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+        <string>Read All Blocks</string>
        </property>
       </widget>
      </item>
