@@ -20,7 +20,7 @@ from crypt import *
 
 
 def getProgVer():
-    return 'V1.002'
+    return 'V1.003'
 
 
 def getNowStr(isCompact=True, isMill=False):
@@ -67,6 +67,10 @@ def getTxt(txtName):
 #             return
 #         time.sleep(0.01)
 
+
+''' calcCardKeyBs
+    return type:bytes length:6
+'''
 def calcCardKeyBs(reader):
     deskey = 'd463fee0c70007d598d4777badde94b0'
     loop = 0
@@ -98,7 +102,7 @@ def calcCardKeyBs(reader):
     KeyBs = list(range(16))
     if loop == 0:
         for i in range(16):
-            KeyBs[i] = 'FF' * 6
+            KeyBs[i] = b'\xFF' * 6
     else:
         cardtype = block4[13]
         factor = bytearray(8)
@@ -216,6 +220,7 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.pb_CpuPps.clicked.connect(self.on_pb_CpuPps)
         self.ui.pb_CalcKeyBs.clicked.connect(self.on_pb_CalcKeyBs)
         self.ui.pb_ReadAllBlocks.clicked.connect(self.on_pb_ReadAllBlocks)
+        self.ui.pb_ClearCard.clicked.connect(self.on_pb_ClearCard)
 
         # QtWidgets.QWidget.setTabOrder(self.ui.cob_Com, self.ui.pb_OpenOrClose)
         # QtWidgets.QWidget.setTabOrder(
@@ -628,6 +633,47 @@ class MainWindow(QtWidgets.QWidget):
                 return
             self.Log('%02d --- %s' % (i, r[2]), 1)
 
+    def on_pb_ClearCard(self):
+        reply = QMessageBox.information(self, 'Caution', 'Sure to clear card?', QMessageBox.Yes | QMessageBox.No)
+        if QMessageBox.No == reply:
+            return
+        self.Log('Clear Card:')
+        blockdata = 'FFFFFFFFFFFFFF078069FFFFFFFFFFFF'
+        k = calcCardKeyBs(self.reader)
+        if not k:
+            self.Log('Calc KeyBs err!', 1)
+            return
+        r = self.reader.FoundCard()
+        if not r or not func.IsSwOk(r[1]):
+            self.Log('FoundCard err!', 1)
+            return
+        for i in range(3, 64, 4):
+            sec = i//4
+            r = self.reader.LoadKey(4, sec, k[sec])
+            if not r or not func.IsSwOk(r[1]):
+                self.Log('LoadKey %d %d %s err!' % (4, sec, k[sec]), 1)
+                return
+            while True:
+                r = self.reader.AuthKey(4, sec)
+                if not r or not func.IsSwOk(r[1]):
+                    self.Log('AuthKey %d %d err!' % (4, sec), 1)
+                    reply = QMessageBox.information(self, 'Caution', 'Yes to continue, No to Exit!', QMessageBox.Yes | QMessageBox.No)
+                    if QMessageBox.No == reply:
+                        return
+                    else:
+                        self.reader.FoundCard()
+                        continue
+                r = self.reader.WriteBlock(i, blockdata)
+                if not r or not func.IsSwOk(r[1]):
+                    self.Log('WriteBlock %d %s err!' % (i, blockdata), 1)
+                    reply = QMessageBox.information(self, 'Caution', 'Yes to continue, No to Exit!', QMessageBox.Yes | QMessageBox.No)
+                    if QMessageBox.No == reply:
+                        return
+                    else:
+                        self.reader.FoundCard()
+                        continue
+                break
+            self.Log('Wr%02d --- %s' % (i, blockdata), 1)
 
     # def eventFilter(self, obj, ev):
     #     print('eventFilter')
