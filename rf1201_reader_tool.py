@@ -3,6 +3,7 @@ import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, QTimer
 from ui_reader_tool import Ui_Form
+import cpu_consume
 from PyQt5.QtWidgets import QMessageBox
 
 import time
@@ -18,9 +19,11 @@ from res import images_qr
 
 from crypt import *
 
+import configparser
+
 
 def getProgVer():
-    return 'V1.003'
+    return 'V1.004'
 
 
 def getNowStr(isCompact=True, isMill=False):
@@ -71,6 +74,8 @@ def getTxt(txtName):
 ''' calcCardKeyBs
     return type:bytes length:6
 '''
+
+
 def calcCardKeyBs(reader):
     deskey = 'd463fee0c70007d598d4777badde94b0'
     loop = 0
@@ -110,11 +115,11 @@ def calcCardKeyBs(reader):
             factor[i] = baCsn[i]
         for i in range(3):
             factor[4+i] = block4[6+i]
-        if 0x90==cardtype or 0x91==cardtype or 0x92==cardtype:
-            for i in range(0,3):
+        if 0x90 == cardtype or 0x91 == cardtype or 0x92 == cardtype:
+            for i in range(0, 3):
                 factor[7] = i
                 KeyBs[i] = des_ecb(bytes(factor), deskey)
-            for i in range(3,16):
+            for i in range(3, 16):
                 KeyBs[i] = KeyBs[2]
         else:
             for i in range(16):
@@ -129,13 +134,70 @@ def calcCardKeyBs(reader):
                 KeyBs[i] = des_ecb(bytes(factor), deskey)
     return tuple(map(lambda x: x[0:6], KeyBs))
 
+class MyConfig():
+    # filePath = 'K:/d/MyProjects/Python/RF1201_Reader_Tool/rf1201_reader_tool.ini'
+    filePath = './rf1201_reader_tool.ini'
+    
+    config = configparser.ConfigParser()
+    print("- Empty config %s" % config.sections())
 
+    def __init__(self):
+        print("- Load config file")
+        self.config.read(self.filePath)
+        # 此处返回的sections list不包括 default
+        print("> config sections : %s" % self.config.sections())
+        print('bitbucket.org' in self.config)  # 判断配置文件中是否存在该 section
+        print("> Load config file is :")
 
+        for section in self.config.keys():
+            print("[{s}]".format(s=section))
+            for key in self.config[section]:
+                print("{k} = {v}".format(k=key, v=self.config[section][key]))
 
+        if not self.config.sections():
+            return
+
+        # # 如访问 dict 一样读取配置内容
+        # print("\n- Get value like dict :user =  %s" %
+        #     self.config['bitbucket.org']['user'])
+        # conf_bitbucket = self.config['bitbucket.org']
+        # print(conf_bitbucket['user'])
+
+        # """
+        # The DEFAULT section which provides default values for all other sections"""
+        # print("\n- DEFAULT Section")
+        # # default 是所有section的默认设置，备胎...
+        # for key in self.config['bitbucket.org']:
+        #     print(key)
+        # print("> Get default value : forwardx11 = %s\n" %
+        #     self.config['bitbucket.org']['forwardx11'])
+
+        # # 读取不同数据类型的配置参数
+        # print("\n- Support datatypes")
+        # forwardx11 = self.config['bitbucket.org'].getboolean('forwardx11')
+        # int_port = self.config.getint('topsecret.server.com', 'port')
+        # float_port = self.config.getfloat('topsecret.server.com', 'port')
+        # print("> Get int port = %d type : %s" % (int_port, type(int_port)))
+        # print("> Get float port = %f type : %s" % (float_port, type(float_port)))
+
+    def getComPort(self):
+        if self.config.has_option('COM', 'Port'):
+            return self.config['COM']['Port']
+        else:
+            return ''
+
+    def setComPort(self, sComPort):
+        if not self.config.has_section('COM'):
+            self.config.add_section('COM')
+        self.config.set('COM', 'Port', sComPort)
+
+    def save(self):
+        self.config.write(open(self.filePath, 'w'))
 
 class MainWindow(QtWidgets.QWidget):
 
     sig_portRecv = QtCore.pyqtSignal(bytes, name='refresh_UI_Recv_Signal')
+    myConfig = MyConfig()
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -143,11 +205,11 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.setupUi(self)
         self.t = None
 
-
         self.setWindowTitle('RF1201 Card Reader Tool - ' + getProgVer())
 
         for port in serial.tools.list_ports.comports():
             self.ui.cob_Com.addItem(port[0])
+        self.ui.cob_Com.setCurrentText(self.myConfig.getComPort())
         self.reader = Reader(self.ui.cob_Com.currentText())
         # self.ui.pb_OpenOrClose.setAttribute(Qt.WA_NativeWindow)
         self.ui.pb_OpenOrClose.setText(getTxt('openPort'))
@@ -165,7 +227,7 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.cob_Channel.addItem('SAM Card')
 
         for x in range(3):
-            self.ui.cob_SamSlot.addItem('Slot %d' %x)
+            self.ui.cob_SamSlot.addItem('Slot %d' % x)
 
         self.ui.cob_SamBaudrate.addItem('9600')
         self.ui.cob_SamBaudrate.addItem('38400')
@@ -210,7 +272,8 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.pb_Transfer.clicked.connect(self.on_pb_Transfer)
         self.ui.pb_SelectChannel.clicked.connect(self.on_pb_SelectChannel)
         self.ui.pb_SelectSamSlot.clicked.connect(self.on_pb_SelectSamSlot)
-        self.ui.pb_SelectSamBaudrate.clicked.connect(self.on_pb_SelectSamBaudrate)
+        self.ui.pb_SelectSamBaudrate.clicked.connect(
+            self.on_pb_SelectSamBaudrate)
         self.ui.pb_CpuReset.clicked.connect(self.on_pb_CpuReset)
         self.ui.pb_CpuDeselect.clicked.connect(self.on_pb_CpuDeselect)
         self.ui.pb_CosCmd.clicked.connect(self.on_pb_CosCmd)
@@ -221,6 +284,7 @@ class MainWindow(QtWidgets.QWidget):
         self.ui.pb_CalcKeyBs.clicked.connect(self.on_pb_CalcKeyBs)
         self.ui.pb_ReadAllBlocks.clicked.connect(self.on_pb_ReadAllBlocks)
         self.ui.pb_ClearCard.clicked.connect(self.on_pb_ClearCard)
+        self.ui.pb_CPU_Consume.clicked.connect(self.on_pb_CPU_Consume)
 
         # QtWidgets.QWidget.setTabOrder(self.ui.cob_Com, self.ui.pb_OpenOrClose)
         # QtWidgets.QWidget.setTabOrder(
@@ -239,7 +303,8 @@ class MainWindow(QtWidgets.QWidget):
             color = 'red'
         else:
             color = 'green'
-        self.ui.te_Recv.append('[<font color="' + color + '">' + getNowStr(False, True) + '</font>] ' + str(s))
+        self.ui.te_Recv.append(
+            '[<font color="' + color + '">' + getNowStr(False, True) + '</font>] ' + str(s))
 
     def on_pb_OpenOrClose_Clicked(self):
         if not self.reader.IsOpen():
@@ -385,7 +450,8 @@ class MainWindow(QtWidgets.QWidget):
             self.showTip('Write block data fmt err!' + ' [' + data + ']')
             return
         if blockno in range(3, 64, 4):
-            reply = QMessageBox.information(self, 'Caution', 'Sure to write key block?', QMessageBox.Yes | QMessageBox.No)
+            reply = QMessageBox.information(
+                self, 'Caution', 'Sure to write key block?', QMessageBox.Yes | QMessageBox.No)
             if QMessageBox.No == reply:
                 return
         self.Log('WriteBlock ' + blocknostr + ' ' + data)
@@ -634,7 +700,8 @@ class MainWindow(QtWidgets.QWidget):
             self.Log('%02d --- %s' % (i, r[2]), 1)
 
     def on_pb_ClearCard(self):
-        reply = QMessageBox.information(self, 'Caution', 'Sure to clear card?', QMessageBox.Yes | QMessageBox.No)
+        reply = QMessageBox.information(
+            self, 'Caution', 'Sure to clear card?', QMessageBox.Yes | QMessageBox.No)
         if QMessageBox.No == reply:
             return
         self.Log('Clear Card:')
@@ -657,7 +724,8 @@ class MainWindow(QtWidgets.QWidget):
                 r = self.reader.AuthKey(4, sec)
                 if not r or not func.IsSwOk(r[1]):
                     self.Log('AuthKey %d %d err!' % (4, sec), 1)
-                    reply = QMessageBox.information(self, 'Caution', 'Yes to continue, No to Exit!', QMessageBox.Yes | QMessageBox.No)
+                    reply = QMessageBox.information(
+                        self, 'Caution', 'Yes to continue, No to Exit!', QMessageBox.Yes | QMessageBox.No)
                     if QMessageBox.No == reply:
                         return
                     else:
@@ -666,7 +734,8 @@ class MainWindow(QtWidgets.QWidget):
                 r = self.reader.WriteBlock(i, blockdata)
                 if not r or not func.IsSwOk(r[1]):
                     self.Log('WriteBlock %d %s err!' % (i, blockdata), 1)
-                    reply = QMessageBox.information(self, 'Caution', 'Yes to continue, No to Exit!', QMessageBox.Yes | QMessageBox.No)
+                    reply = QMessageBox.information(
+                        self, 'Caution', 'Yes to continue, No to Exit!', QMessageBox.Yes | QMessageBox.No)
                     if QMessageBox.No == reply:
                         return
                     else:
@@ -674,6 +743,10 @@ class MainWindow(QtWidgets.QWidget):
                         continue
                 break
             self.Log('Wr%02d --- %s' % (i, blockdata), 1)
+
+    def on_pb_CPU_Consume(self):
+        dlg = cpu_consume.DlgCpuConsume(self.reader)
+        dlg.exec_()
 
     # def eventFilter(self, obj, ev):
     #     print('eventFilter')
@@ -694,6 +767,8 @@ class MainWindow(QtWidgets.QWidget):
     def closeEvent(self, ev):
         if self.reader.IsOpen():
             self.reader.Close()
+        self.myConfig.setComPort(self.ui.cob_Com.currentText())
+        self.myConfig.save()
 
 
 if __name__ == '__main__':

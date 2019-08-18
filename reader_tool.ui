@@ -853,6 +853,13 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="11">
+      <widget class="QPushButton" name="pb_CPU_Consume">
+       <property name="text">
+        <string>CPU Consume</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

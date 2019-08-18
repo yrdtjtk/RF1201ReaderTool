@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'reader_tool.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -534,6 +534,9 @@ class Ui_Form(object):
         self.pb_ClearCard = QtWidgets.QPushButton(Form)
         self.pb_ClearCard.setObjectName("pb_ClearCard")
         self.gridLayout.addWidget(self.pb_ClearCard, 12, 3, 1, 1)
+        self.pb_CPU_Consume = QtWidgets.QPushButton(Form)
+        self.pb_CPU_Consume.setObjectName("pb_CPU_Consume")
+        self.gridLayout.addWidget(self.pb_CPU_Consume, 1, 11, 1, 1)
         self.gridLayout_3.addLayout(self.gridLayout, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
@@ -584,4 +587,5 @@ class Ui_Form(object):
         self.pb_CalcKeyBs.setText(_translate("Form", "CalcKeyBs"))
         self.pb_ReadAllBlocks.setText(_translate("Form", "Read All Blocks"))
         self.pb_ClearCard.setText(_translate("Form", "Clear Card"))
+        self.pb_CPU_Consume.setText(_translate("Form", "CPU Consume"))
 
